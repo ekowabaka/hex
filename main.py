@@ -1,11 +1,11 @@
-from hex import representation, evaluate
+from hex import representation, players
 
 boardsize = 5
 
 if __name__ == "__main__":
     board = representation.Board()
     board.setup(boardsize)
-    network = evaluate.NetworkFlow(boardsize)
+    network = players.AlphaBeta(boardsize)
 
     # board.addmarker(1, 2, representation.WHITE_MARKER)
     # board.addmarker(2, 2, representation.BLACK_MARKER)

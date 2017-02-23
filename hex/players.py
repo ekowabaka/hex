@@ -1,9 +1,15 @@
-from collections import deque
 from hex import representation
 import math
 
 
-class NetworkFlow(object):
+class MonteCarlo(object):
+    def __init__(self):
+        self.stats = dict()
+
+    def getmove(self):
+
+
+class AlphaBeta(object):
 
     def __init__(self, size):
         self.size = size
