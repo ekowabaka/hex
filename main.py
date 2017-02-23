@@ -5,7 +5,7 @@ boardsize = 5
 if __name__ == "__main__":
     board = representation.Board()
     board.setup(boardsize)
-    network = players.AlphaBeta(boardsize)
+    player = players.MonteCarloUCT() #AlphaBeta(boardsize)
 
     # board.addmarker(1, 2, representation.WHITE_MARKER)
     # board.addmarker(2, 2, representation.BLACK_MARKER)
@@ -17,6 +17,11 @@ if __name__ == "__main__":
     # board.addmarker(0, 1, representation.BLACK_MARKER)
     # board.addmarker(0, 3, representation.WHITE_MARKER)
     # print(board.whitegraph.graph)
+    # nu = representation.Board()
+    # nu.setup(board.size, board.state)
+    # print(nu.whitegraph.graph)
+
+
     #
     # # board.addmarker(2, 1, representation.WHITE_MARKER)
     # # board.addmarker(3, 1, representation.BLACK_MARKER)
@@ -24,16 +29,16 @@ if __name__ == "__main__":
     # # board.addmarker(4, 2, representation.BLACK_MARKER)
     # # board.addmarker(3, 2, representation.WHITE_MARKER)
     # board.draw()
-    # print(network.evaluate(board))
+    # print(player.evaluate(board))
 
-    # print(network.getflow(board.blackgraph))
-    # print(network.getflow(board.whitegraph))
+    # print(player.getflow(board.blackgraph))
+    # print(player.getflow(board.whitegraph))
     # board.addmarker(0, 0, representation.WHITE_MARKER)
-    # print(network.getflow(board.blackgraph))
-    # print(network.getflow(board.whitegraph))
+    # print(player.getflow(board.blackgraph))
+    # print(player.getflow(board.whitegraph))
 
     while True:
-        move = network.getmove(board)
+        move = player.getmove(board)
         print(move)
         board.addmarker(move[0], move[1], representation.BLACK_MARKER)
         board.draw()

@@ -77,14 +77,18 @@ class Board(object):
         if self.whitegraph.maxvertex in self.whitegraph.graph[-1]:
             return True
 
-    def setup(self, size=8):
-        # Representation for current state of the board as a 64-tuple
+    def isend(self):
+        return self.iswin() or self.islose()
+
+    def setup(self, size=8, state=None):
+        # Representation for current state of the board as a tuple
         self.state = tuple((None,) * size for i in range(size))
         self.blackgraph = Graph()
         self.blackgraph.setup(size, lambda u, v: True if u[1] > v[1] else u[0] > v[0] if u[1] == v[1] else False)
         self.whitegraph = Graph()
         self.whitegraph.setup(size, lambda u, v: True if u[0] > v[0] else u[1] > v[1] if u[0] == v[0] else False)
         self.size = size
+
         # Connect flow edges to graph for black player
         s = -1
         t = self.blackgraph.maxvertex
@@ -94,6 +98,13 @@ class Board(object):
 
             self.whitegraph.addedge(s, node * size)
             self.whitegraph.addedge((node + 1) * size - 1, t)
+
+        # Rebuild the flow graph if a new state was presented
+        if state:
+            for x in range(size):
+                for y in range (size):
+                    if state[x][y] is not None:
+                        self.addmarker(x, y, state[x][y])
 
     def clone(self):
         clone = Board()

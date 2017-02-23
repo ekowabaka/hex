@@ -2,14 +2,45 @@ from hex import representation
 import math
 
 
-class MonteCarlo(object):
-    def __init__(self):
-        self.stats = dict()
+class MonteCarloUCT(object):
+    """
+    A pure random montecarlo search tree
+    """
 
-    def getmove(self):
+    def __init__(self):
+        self.states = None
+
+    def getmove(self, board):
+        self.mcts(board)
+
+    def mcts(self, board):
+        self.states = {board.state:dict()}
+        self.states[board.state]["moves"] = board.getmoves(representation.BLACK_MARKER)
+        terminated = False
+
+        while not terminated:
+            state = self.treepolicy(board)
+            value = self.defaultpolicy(state)
+            self.backup(state, value)
+
+    def treepolicy(self, root):
+        board = root
+        while not board.isend():
+            if "moves" in self.states[board.state]:
+                return self.expand(board)
+            else:
+                state = self.bestchild(board)
+
+    def expand(self, board):
+        return self.states[board.state]["moves"].pop()['pos']
 
 
 class AlphaBeta(object):
+    """
+    Plain alpha-beta search agent.
+    This agent uses the player flow heuristic to implement a classic alpha-beta search of gametree nodes to determine
+    gameplay actions.
+    """
 
     def __init__(self, size):
         self.size = size
@@ -50,7 +81,6 @@ class AlphaBeta(object):
                     alpha = value['value']
                 if alpha >= beta:
                     break
-
             return {'value': alpha, 'move': bestmove}
         else:
             moves = board.getmoves(representation.WHITE_MARKER)
