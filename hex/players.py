@@ -32,7 +32,14 @@ class MonteCarloUCT(object):
                 state = self.bestchild(board)
 
     def expand(self, board):
-        return self.states[board.state]["moves"].pop()['pos']
+        return self.states[board.state]["moves"].pop()
+
+    def defaultpolicy(self, board):
+        # Implement full playout of game state
+        while not board.isend():
+
+
+
 
 
 class AlphaBeta(object):
