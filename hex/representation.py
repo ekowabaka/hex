@@ -114,14 +114,17 @@ class Board(object):
         clone.size = self.size
         return clone
 
-    def getmoves(self, marker):
+    def getmoves(self, marker, withboards=True):
         moves = list()
         for x in range(self.size):
             for y in range(self.size):
                 if self.state[x][y] is None:
-                    move = self.clone()
-                    move.addmarker(x, y, marker)
-                    moves.append({"pos":(x,y), "board":move})
+                    if withboards:
+                        move = self.clone()
+                        move.addmarker(x, y, marker)
+                        moves.append({"pos": (x, y), "board": move})
+                    else:
+                        moves.append((x, y))
         return moves
 
     def newcol(self, column, position, marker):

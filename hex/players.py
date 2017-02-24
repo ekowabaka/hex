@@ -1,6 +1,16 @@
 from hex import representation
 import math
+import random
+import operator
 
+class MonteCarloState(object):
+    def __init__(self, parent=None, moves=[]):
+        self.n = 0
+        self.q = 0
+        self.parent = parent
+        self.moves = moves
+        if len(moves) > 0:
+            self.children = set([x["board"] for x in moves])
 
 class MonteCarloUCT(object):
     """
@@ -8,42 +18,60 @@ class MonteCarloUCT(object):
     """
 
     def __init__(self):
-        self.states = None
+        self.states = dict()
 
     def getmove(self, board):
         self.mcts(board)
 
     def mcts(self, board):
-        self.states = {board.state:dict()}
-        self.states[board.state]["moves"] = board.getmoves(representation.BLACK_MARKER)
+        self.states[board.state] = MonteCarloState(moves=board.getmoves(representation.BLACK_MARKER))
         terminated = False
 
         while not terminated:
-            state = self.treepolicy(board)
-            value = self.defaultpolicy(state)
+            newboard = self.treepolicy(board)
+            state = newboard.state
+            value = self.defaultpolicy(newboard)
             self.backup(state, value)
 
     def treepolicy(self, root):
         board = root
         while not board.isend():
-            if "moves" in self.states[board.state]:
-                return self.expand(board).get
+            if len(self.states[board.state].moves) > 0:
+                return self.expand(board)
             else:
-                state = self.bestchild(board)
+                board = self.bestchild(board)
 
     def expand(self, board):
-        return self.states[board.state]["moves"].pop()
+        newboard = self.states[board.state].moves.pop()["board"]
+        moves = newboard.getmoves(representation.WHITE_MARKER)
+        self.states[newboard.state] = MonteCarloState(moves=moves, parent=board.state)
+        return newboard
 
     def defaultpolicy(self, board):
         # Implement full playout of game state
-        while not board.isend():
+        markers = [representation.BLACK_MARKER, representation.WHITE_MARKER]
+        turn = 0
+        playboard = board.clone()
+        while not playboard.isend():
+            moves = playboard.getmoves(markers[turn], withboards=False)
+            move = moves[random.randrange(len(moves))]
+            playboard.addmarker(move[0], move[1], markers[turn])
+            turn = int(not turn)
+        return 1 if playboard.iswin() else -1
 
+    def backup(self, state, value):
+        while state:
+            self.states[state].n += 1
+            self.states[state].q += value
+            value = -value
+            state = self.states[state].parent
 
-
-
-    def defaultpolicy(self, board):
-        print(board)
-
+    def bestchild(self, board):
+        c = 0.707106
+        list = dict([(x.state, (x, self.states[x.state].q/self.states[x.state].n + c * math.sqrt((2 * math.log(self.states[board.state].n, math.e))) / self.states[x.state].n)) for x in self.states[board.state].children])
+        print(list)
+        best = max(list.items(), key=lambda x: x[0])[0]
+        return best
 
 class AlphaBeta(object):
     """
