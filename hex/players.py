@@ -4,7 +4,7 @@ import math
 
 class MonteCarloUCT(object):
     """
-    A pure random montecarlo search tree
+    A pure random MonteCarlo search tree.
     """
 
     def __init__(self):
@@ -27,12 +27,15 @@ class MonteCarloUCT(object):
         board = root
         while not board.isend():
             if "moves" in self.states[board.state]:
-                return self.expand(board)
+                return self.expand(board).get
             else:
                 state = self.bestchild(board)
 
     def expand(self, board):
         return self.states[board.state]["moves"].pop()['pos']
+
+    def defaultpolicy(self, board):
+        print(board)
 
 
 class AlphaBeta(object):
