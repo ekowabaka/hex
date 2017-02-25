@@ -1,6 +1,6 @@
 from hex import representation, players
 
-boardsize = 8
+boardsize = 6
 
 if __name__ == "__main__":
     board = representation.Board()

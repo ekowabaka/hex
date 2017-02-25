@@ -1,16 +1,20 @@
 from hex import representation
 import math
 import random
-import operator
+import time
+
 
 class MonteCarloState(object):
     def __init__(self, parent=None, moves=[]):
         self.n = 0
         self.q = 0
         self.parent = parent
+        self.move = None
         self.moves = moves
+        self.depth = 0
         if len(moves) > 0:
-            self.children = set([x["board"] for x in moves])
+            self.children = list([x["board"] for x in moves])
+
 
 class MonteCarloUCT(object):
     """
@@ -18,17 +22,25 @@ class MonteCarloUCT(object):
     """
 
     def __init__(self):
-        self.states = dict()
+        self.states = None
 
     def getmove(self, board):
         self.mcts(board)
+        action = max([x.state for x in self.states[board.state].children], key=lambda x: self.states[x].q)
+        return self.states[action].move
 
     def mcts(self, board):
+        self.states = dict()
         self.states[board.state] = MonteCarloState(moves=board.getmoves(representation.BLACK_MARKER))
         terminated = False
+        start = time.time()
 
         while not terminated:
+            if time.time() - start > 20:
+                terminated = True
             newboard = self.treepolicy(board)
+            if not newboard:
+                continue
             state = newboard.state
             value = self.defaultpolicy(newboard)
             self.backup(state, value)
@@ -42,9 +54,14 @@ class MonteCarloUCT(object):
                 board = self.bestchild(board)
 
     def expand(self, board):
-        newboard = self.states[board.state].moves.pop()["board"]
-        moves = newboard.getmoves(representation.WHITE_MARKER)
+        newstate = self.states[board.state].moves.pop()
+        newboard = newstate['board']
+        markers = [representation.WHITE_MARKER, representation.BLACK_MARKER]
+        depth = self.states[board.state].depth + 1
+        moves = newboard.getmoves(markers[depth % 2])
         self.states[newboard.state] = MonteCarloState(moves=moves, parent=board.state)
+        self.states[newboard.state].move = newstate['pos']
+        self.states[newboard.state].depth = depth
         return newboard
 
     def defaultpolicy(self, board):
@@ -68,10 +85,10 @@ class MonteCarloUCT(object):
 
     def bestchild(self, board):
         c = 0.707106
-        list = dict([(x.state, (x, self.states[x.state].q/self.states[x.state].n + c * math.sqrt((2 * math.log(self.states[board.state].n, math.e))) / self.states[x.state].n)) for x in self.states[board.state].children])
-        print(list)
-        best = max(list.items(), key=lambda x: x[0])[0]
-        return best
+        # Build a dictionary with state as key and a tuple of (board, q) as values
+        children = {x.state:  (x, self.states[x.state].q/self.states[x.state].n + c * math.sqrt((2 * math.log(self.states[board.state].n, math.e))) / self.states[x.state].n) for x in self.states[board.state].children}
+        best = max(children.items(), key=lambda x: x[1][1])[0]
+        return children[best][0]
 
 class AlphaBeta(object):
     """
