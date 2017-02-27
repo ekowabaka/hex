@@ -1,11 +1,11 @@
 from hex import representation, players
 
-boardsize = 6
+boardsize = 4
 
 if __name__ == "__main__":
     board = representation.Board()
     board.setup(boardsize)
-    player = players.MonteCarloUCT() #AlphaBeta(boardsize)
+    player = players.AlphaBetaHSearch(board) #AlphaBeta(boardsize)
 
     # board.addmarker(1, 2, representation.WHITE_MARKER)
     # board.addmarker(2, 2, representation.BLACK_MARKER)

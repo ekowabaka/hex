@@ -97,8 +97,8 @@ class AlphaBeta(object):
     gameplay actions.
     """
 
-    def __init__(self, size):
-        self.size = size
+    def __init__(self, board):
+        self.size = board.size
 
     def getflow(self, graph):
         flow = 0
@@ -147,3 +147,13 @@ class AlphaBeta(object):
                 if beta <= alpha:
                     break
             return {'value': beta, 'move': bestmove}
+
+class AlphaBetaHSearch(AlphaBeta):
+
+    def __init__(self, board):
+        AlphaBeta.__init__(self, board)
+        self.blackhsearch = representation.HSearch(board.blackgraph)
+
+    def alphabeta(self, board, depth=3, alpha=-float('inf'), beta=float('inf'), ismax=True):
+        #self.blackhsearch.run(board, representation.BLACK_MARKER)
+        return AlphaBeta.alphabeta(self, board, depth, alpha, beta, ismax)
