@@ -121,9 +121,12 @@ class AlphaBeta(object):
             heuristic += 10 * (depth + 1)
         if board.islose():
             heuristic -= 10 * (depth + 1)
+
+        heuristic += (self.patternsearch.countbridges(board, representation.BLACK_MARKER) * 2)
+
         return heuristic
 
-    def alphabeta(self, board, depth=5, alpha=-float('inf'), beta=float('inf'), ismax=True):
+    def alphabeta(self, board, depth=3, alpha=-float('inf'), beta=float('inf'), ismax=True):
         if depth == 0 or board.iswin() or board.islose():
             return {'value': self.evaluate(board, depth)}
 
@@ -131,7 +134,6 @@ class AlphaBeta(object):
 
         if ismax:
             moves = board.getmoves(representation.BLACK_MARKER)
-            self.patternsearch.findbridges(board, representation.BLACK_MARKER)
             for move in moves:
                 value = self.alphabeta(move['board'], depth - 1, alpha, beta, False)
                 if value['value'] > alpha:
@@ -142,7 +144,6 @@ class AlphaBeta(object):
             return {'value': alpha, 'move': bestmove}
         else:
             moves = board.getmoves(representation.WHITE_MARKER)
-            self.patternsearch.findbridges(board, representation.WHITE_MARKER)
             for move in moves:
                 value = self.alphabeta(move['board'], depth - 1, alpha, beta, True)
                 if value['value'] < beta:
