@@ -1,4 +1,5 @@
 from hex import representation
+from hex import patterns
 import math
 import random
 import time
@@ -98,6 +99,7 @@ class AlphaBeta(object):
     """
 
     def __init__(self, board):
+        self.patternsearch = patterns.Search()
         self.size = board.size
 
     def getflow(self, graph):
@@ -129,6 +131,7 @@ class AlphaBeta(object):
 
         if ismax:
             moves = board.getmoves(representation.BLACK_MARKER)
+            self.patternsearch.findbridges(board, representation.BLACK_MARKER)
             for move in moves:
                 value = self.alphabeta(move['board'], depth - 1, alpha, beta, False)
                 if value['value'] > alpha:
@@ -139,6 +142,7 @@ class AlphaBeta(object):
             return {'value': alpha, 'move': bestmove}
         else:
             moves = board.getmoves(representation.WHITE_MARKER)
+            self.patternsearch.findbridges(board, representation.WHITE_MARKER)
             for move in moves:
                 value = self.alphabeta(move['board'], depth - 1, alpha, beta, True)
                 if value['value'] < beta:
@@ -152,8 +156,9 @@ class AlphaBetaHSearch(AlphaBeta):
 
     def __init__(self, board):
         AlphaBeta.__init__(self, board)
-        self.blackhsearch = representation.HSearch(board.blackgraph)
+        self.patternsearch = patterns.Search()
 
     def alphabeta(self, board, depth=3, alpha=-float('inf'), beta=float('inf'), ismax=True):
-        #self.blackhsearch.run(board, representation.BLACK_MARKER)
+        #self.patternsearch.findbridges(board, representation.BLACK_MARKER if ismax else representation.WHITE_MARKER)
+        #print(depth)
         return AlphaBeta.alphabeta(self, board, depth, alpha, beta, ismax)

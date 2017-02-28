@@ -167,7 +167,6 @@ class Board(object):
                         graph.addedge(v, u)
     def draw(self):
         indent = 0
-        i = 0
         size = len(self.state)
         for y in range(size):
             for x in range(size):
@@ -176,124 +175,7 @@ class Board(object):
                     marker = '0'
                 elif self.state[x][y] == WHITE_MARKER:
                     marker = 'X'
-                sys.stdout.write(marker + ' ')
-                i+=1
+                sys.stdout.write(marker + '  ')
             sys.stdout.write("\n")
             indent += 1
-            sys.stdout.write(' ' * indent)
-
-class Carrier(object):
-    def __init__(self, carrier):
-        self.new = True
-        self.carrier = carrier
-
-class HSearch(object):
-    def __init__(self, graph):
-        self.graph = graph
-
-    def getneighbors(self, vertex, state, marker):
-        vertices = self.graph.getneighbors(vertex)
-        neighbors = []
-        for v in vertices:
-            if state[v] == marker:
-                #print(k,v)
-                neighbors.append(v)
-        return neighbors
-
-    def getgroups(self, state, marker):
-        groups = list()
-        added = False
-        for i in range(-1, self.graph.maxvertex+1):
-            if state[i] is None:
-                groups.append({i})
-                continue
-            elif state[i] == marker:
-                for group in groups:
-                    if i in group:
-                        group.update(self.getneighbors(i, state, marker))
-                        added = True
-                        break
-                if not added:
-                    group = set()
-                    group.add(i)
-                    group.update(self.getneighbors(i, state, marker))
-                    groups.append(group)
-        return groups
-
-    def hasnew(self,c):
-        for key, carriers in c.items():
-            for carrier in carriers:
-                if carrier.new:
-                    return True
-        return False
-
-    def run(self, board, marker):
-        # Group all the markers and build a list of markers for connectivity testing
-        state = board.getflatstate()
-        state[-1] = marker
-        state[self.graph.maxvertex] = marker
-        g = self.getgroups(state, marker)
-        c = dict()
-        newc = list()
-        sc = dict()
-
-        for g1 in g:
-            g1 = frozenset(g1)
-            for g2 in g:
-                g2 = frozenset(g2)
-                if g1 == g2:
-                    continue
-                key = frozenset([g1, g2])
-                if key in c:
-                    continue
-                c[key] = list()
-                sc[key] = list()
-                for v1 in g1:
-                    for v2 in g2:
-                        if v1 in self.graph.getneighbors(v2) or v2 in self.graph.getneighbors(v1):
-                            c[key].append(Carrier({None}))
-
-        while self.hasnew(c):
-            for _g in g:
-                _g = frozenset(_g)
-                _gl = list(_g)
-                for g1 in g:
-                    g1 = frozenset(g1)
-                    g1l = list(g1)
-                    for g2 in g:
-                        g2 = frozenset(g2)
-                        g2l = list(g2)
-                        if g1 == g2:
-                            continue
-                        g1g = frozenset([g1, _g])
-                        g2g = frozenset([g2, _g])
-
-                        if g1g not in c: continue
-                        if g2g not in c: continue
-                        if state[_gl[0]] == BLACK_MARKER and (state[g1l[0]] is not None or state[g2l[0]] is not None):
-                            continue
-                        if len(c[g1g]) == 0: continue
-                        if len(c[g2g]) == 0: continue
-
-                        for c1 in c[g1g]:
-                            for c2 in c[g2g]:
-                                if not c1.new and not c2.new:
-                                    continue
-                                c1.new = False
-                                c2.new = False
-                                c1s = c1.carrier
-                                c2s = c2.carrier
-
-                                if len(c1s.intersection(c2s)) > 0: continue
-                                if c1.issubset(g2): continue
-                                if c2.issubset(g1): continue
-
-                                if state[_g[0]] == BLACK_MARKER:
-                                    c[frozenset([g1, g2])] = Carrier(c1s.union(c2s))
-                                else:
-                                    newsc = g1.union(c1s).union(c2s)
-        #print('done')
-
-
-
-        # Build lists of connections with nearest neighbors
+            sys.stdout.write('  ' * indent)
