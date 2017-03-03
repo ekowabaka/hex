@@ -1,6 +1,17 @@
 from hex import representation, players
+import time
 
-boardsize = 8
+boardsize = 6
+
+def getmove():
+    while True:
+        location = input("\nEnter location to place marker (x,y):")
+        coords = [int(x) for x in location.split(',')]
+        if (coords[0], coords[1]) not in board.markers:
+            break
+        else:
+            print('Invalid move please select another location')
+    return coords
 
 if __name__ == "__main__":
     board = representation.Board()
@@ -31,19 +42,23 @@ if __name__ == "__main__":
     # board.draw()
     # print(player.evaluate(board))
 
-    # print(player.getflow(board.blackgraph))
-    # print(player.getflow(board.whitegraph))
+    print(player.getflow(board.blackgraph))
+    print(player.getflow(board.whitegraph))
     # board.addmarker(0, 0, representation.WHITE_MARKER)
     # print(player.getflow(board.blackgraph))
     # print(player.getflow(board.whitegraph))
 
     while True:
-        move = player.getmove(board)
+        start = time.time()
+        move = getmove() #player.getmove(board)
+        print('Elapsed', time.time() - start)
         print(move)
         board.addmarker(move[0], move[1], representation.BLACK_MARKER)
         board.draw()
-        location = input("\nEnter location to place marker (x,y):")
-        coords = [int(x) for x in location.split(',')]
+        print(player.getflow(board.blackgraph), player.getflow(board.whitegraph))
+        coords = getmove()
         board.addmarker(coords[0], coords[1], representation.WHITE_MARKER)
         board.draw()
+        print(player.getflow(board.blackgraph), player.getflow(board.whitegraph))
+
 

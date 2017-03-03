@@ -102,12 +102,20 @@ class AlphaBeta(object):
         self.patternsearch = patterns.Search()
         self.size = board.size
 
-    def getflow(self, graph):
-        flow = 0
-        for node in range(-1, graph.maxvertex + 1):
-            for child in graph.getneighbors(node):
-                flow += 1
+    def getflow(self, graph, node=None):
+        if node is None:
+            node = graph.maxvertex
+        flow = 1
+        for parent in graph.getparents(node):
+            flow += self.getflow(graph, parent)
+
         return flow
+        # flow = 0
+        # for node in range(-1, graph.maxvertex + 1):
+        #     for child in graph.getneighbors(node):
+        #
+        #         flow += 1
+        # return flow
 
     def getmove(self, board):
         move = self.alphabeta(board)
@@ -116,13 +124,39 @@ class AlphaBeta(object):
     def evaluate(self, board, depth=1):
         whiteflow = self.getflow(board.whitegraph)
         blackflow = self.getflow(board.blackgraph)
+        # board.draw()
+        # print(blackflow, whiteflow)
         heuristic = math.log(blackflow / whiteflow)
         if board.iswin():
             heuristic += 10 * (depth + 1)
         if board.islose():
             heuristic -= 10 * (depth + 1)
 
-        heuristic += (self.patternsearch.countbridges(board, representation.BLACK_MARKER) * 2)
+        # heuristic += (self.patternsearch.countbridges(board, representation.BLACK_MARKER) * 2)
+
+        # ysize = board.size + board.size - 1
+        # yboard = list()
+        # for x in range(ysize):
+        #     column = list()
+        #     for y in range(ysize-x):
+        #         if x < board.size and y < board.size:
+        #             state = board.state[x][y]
+        #             column.append(-1 if state == representation.WHITE_MARKER else 1 if state == representation.BLACK_MARKER else 0)
+        #         elif x >= board.size:
+        #             column.append(-1)
+        #         elif y >= board.size:
+        #             column.append(1)
+        #     yboard.append(column)
+        #
+        # for iteration in range(ysize, 0, -1):
+        #     for y in range(iteration - 1):
+        #         for x in range(iteration - 1 - y):
+        #             p1 = yboard[x][y]
+        #             p2 = yboard[x+1][y]
+        #             p3 = yboard[x][y+1]
+        #             yboard[x][y] = (p1 + p2 + p3 - p1 * p2 * p3) / 2
+        #
+        # heuristic = yboard[0][0]
 
         return heuristic
 
@@ -130,11 +164,14 @@ class AlphaBeta(object):
         if depth == 0 or board.iswin() or board.islose():
             return {'value': self.evaluate(board, depth)}
 
+        playpattern = self.patternsearch.getpattern(board)
         bestmove = None
 
         if ismax:
             moves = board.getmoves(representation.BLACK_MARKER)
             for move in moves:
+                if move['pos'] not in playpattern:
+                    continue
                 value = self.alphabeta(move['board'], depth - 1, alpha, beta, False)
                 if value['value'] > alpha:
                     bestmove = move['pos']
@@ -145,6 +182,8 @@ class AlphaBeta(object):
         else:
             moves = board.getmoves(representation.WHITE_MARKER)
             for move in moves:
+                if move['pos'] not in playpattern:
+                    continue
                 value = self.alphabeta(move['board'], depth - 1, alpha, beta, True)
                 if value['value'] < beta:
                     beta = value['value']
@@ -153,13 +192,3 @@ class AlphaBeta(object):
                     break
             return {'value': beta, 'move': bestmove}
 
-class AlphaBetaHSearch(AlphaBeta):
-
-    def __init__(self, board):
-        AlphaBeta.__init__(self, board)
-        self.patternsearch = patterns.Search()
-
-    def alphabeta(self, board, depth=3, alpha=-float('inf'), beta=float('inf'), ismax=True):
-        #self.patternsearch.findbridges(board, representation.BLACK_MARKER if ismax else representation.WHITE_MARKER)
-        #print(depth)
-        return AlphaBeta.alphabeta(self, board, depth, alpha, beta, ismax)

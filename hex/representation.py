@@ -10,22 +10,32 @@ class Graph(object):
         return y * self.size + x
 
     def addedge(self, u, v):
-        neighbors = set(self.graph[u])
+        neighbors = set(self.children[u])
         neighbors.add(v)
-        self.graph[u] = frozenset(neighbors)
+        self.children[u] = frozenset(neighbors)
+        parents = set(self.parents[v])
+        parents.add(u)
+        self.parents[v] = frozenset(parents)
 
     def getneighbors(self, v):
-        return self.graph[v]
+        return self.children[v]
+
+    def getparents(self, v):
+        return self.parents[v]
 
     def removevertex(self, v):
-        neighbors = list(self.graph[v])
+        neighbors = list(self.children[v].union(self.parents[v]))
         for i in range(-1, self.maxvertex + 1):
-            if v in self.graph[i]:
-                neighbors.append(i)
-                items = set(self.graph[i])
+            if v in self.children[i]:
+                items = set(self.children[i])
                 items.remove(v)
-                self.graph[i] = frozenset(items)
-        self.graph[v] = set()
+                self.children[i] = frozenset(items)
+            if v in self.parents[i]:
+                items = set(self.parents[i])
+                items.remove(v)
+                self.parents[i] = frozenset(items)
+        self.children[v] = set()
+        self.parents[v] = set()
         return neighbors
 
     def clone(self):
@@ -34,23 +44,28 @@ class Graph(object):
         clone.offsets = self.offsets
         clone.maxvertex = self.maxvertex
         clone.cmp = self.cmp
-        clone.graph = copy.copy(self.graph)
+        clone.children = copy.copy(self.children)
+        clone.parents = copy.copy(self.parents)
         return clone
 
     def __init__(self):
         self.size = None
         self.offsets = None
         self.maxvertex = None
-        self.graph = None
+        self.children = None
+        self.parents = None
         self.cmp = None
+        self.rank = list()
 
     def setup(self, size, cmp):
         self.size = size
         self.offsets = [-size, 1-size, -1, 1, size-1, size]
         self.maxvertex = size * size
-        self.graph = dict([(x, frozenset()) for x in range(-1, self.maxvertex+1)])
+        self.children = dict([(x, frozenset()) for x in range(-1, self.maxvertex + 1)])
+        self.parents = dict([(x, frozenset()) for x in range(-1, self.maxvertex + 1)])
         self.cmp = cmp
-        # Connect all the edges in the graph representation
+
+        # Connect all the edges in the children representation
         for x in range(size):
             for y in range(size):
                 node = self.nodeid(x, y)
@@ -60,7 +75,7 @@ class Graph(object):
                 for neighbor in neighbors:
                     if cmp(neighbor, (x, y)):
                         neighbor = self.nodeid(neighbor[0], neighbor[1])
-                        if neighbor not in self.graph[node] and node not in self.graph[neighbor]:
+                        if neighbor not in self.children[node] and node not in self.children[neighbor]:
                             self.addedge(node, neighbor)
 
 class Board(object):
@@ -68,14 +83,15 @@ class Board(object):
         self.state = ()
         self.blackgraph = None
         self.whitegraph = None
+        self.markers = dict()
         self.size = None
 
     def iswin(self):
-        if self.blackgraph.maxvertex in self.blackgraph.graph[-1]:
+        if self.blackgraph.maxvertex in self.blackgraph.children[-1]:
             return True
 
     def islose(self):
-        if self.whitegraph.maxvertex in self.whitegraph.graph[-1]:
+        if self.whitegraph.maxvertex in self.whitegraph.children[-1]:
             return True
 
     def isend(self):
@@ -90,7 +106,7 @@ class Board(object):
         self.whitegraph.setup(size, lambda u, v: True if u[0] > v[0] else u[1] > v[1] if u[0] == v[0] else False)
         self.size = size
 
-        # Connect flow edges to graph for players
+        # Connect flow edges to children for players
         s = -1
         t = self.blackgraph.maxvertex
         for node in range(size):
@@ -100,7 +116,7 @@ class Board(object):
             self.whitegraph.addedge(s, node * size)
             self.whitegraph.addedge((node + 1) * size - 1, t)
 
-        # Rebuild the flow graph if a new state was presented
+        # Rebuild the flow children if a new state was presented
         if state:
             for x in range(size):
                 for y in range (size):
@@ -113,6 +129,7 @@ class Board(object):
         clone.blackgraph = self.blackgraph.clone()
         clone.whitegraph = self.whitegraph.clone()
         clone.size = self.size
+        clone.markers = copy.copy(self.markers)
         return clone
 
     def getmoves(self, marker, withboards=True):
@@ -135,6 +152,7 @@ class Board(object):
 
     def addmarker(self, x, y, marker):
         self.state = tuple(self.state[i] if i != x else self.newcol(self.state[i], y, marker) for i in range(len(self.state)))
+        self.markers[(x, y)] = marker
         self.modifygraph(x, y, self.blackgraph, marker, BLACK_MARKER)
         self.modifygraph(x, y, self.whitegraph, marker, WHITE_MARKER)
 
