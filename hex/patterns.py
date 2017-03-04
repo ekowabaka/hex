@@ -42,8 +42,8 @@ class Search(object):
                 if pos[0] + x >= 0 and pos[1] + y >= 0:
                     moves.add((pos[0] + x, pos[1] + y))
         if not moves:
-            for x in range(2, board.size - 2):
-                for y in range(2, board.size - 2):
+            for x in range(board.size):
+                for y in range(board.size):
                     moves.add((x, y))
         return moves
 

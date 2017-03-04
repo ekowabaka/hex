@@ -1,7 +1,7 @@
 from hex import representation, players
 import time
 
-boardsize = 6
+boardsize = 8
 
 def getmove():
     while True:

@@ -103,15 +103,24 @@ class AlphaBeta(object):
         self.size = board.size
         self.flows = dict()
 
-    def getflow(self, graph, node=None, flows=dict()):
+    def getflow(self, graph, node=None):
         if node is None:
             self.flows = dict()
             node = graph.maxvertex
-        flow = 1
+        if node == -1:
+            return float('inf')
+        flow = 0
         for parent in graph.getparents(node):
             if parent not in self.flows:
                 self.flows[parent] = self.getflow(graph, parent)
             flow += self.flows[parent]
+
+        numchildren = len(graph.children[node])
+
+        if flow > numchildren and node != graph.maxvertex:
+            flow = 1
+        elif node != graph.maxvertex:
+            flow /= numchildren
 
         return flow
         # flow = 0
@@ -126,15 +135,17 @@ class AlphaBeta(object):
         return move['move']
 
     def evaluate(self, board, depth=1):
-        whiteflow = self.getflow(board.whitegraph)
-        blackflow = self.getflow(board.blackgraph)
-        # board.draw()
-        # print(blackflow, whiteflow)
-        heuristic = math.log(blackflow / whiteflow)
         if board.iswin():
-            heuristic += 10 * (depth + 1)
-        if board.islose():
-            heuristic -= 10 * (depth + 1)
+            heuristic = 10 * (depth + 1)
+        elif board.islose():
+            heuristic = 0
+        else:
+            whiteflow = self.getflow(board.whitegraph)
+            blackflow = self.getflow(board.blackgraph)
+            # board.draw()
+            # print(blackflow, whiteflow)
+            heuristic = math.log(blackflow / whiteflow)
+
 
         # heuristic += (self.patternsearch.countbridges(board, representation.BLACK_MARKER) * 2)
 
@@ -164,7 +175,7 @@ class AlphaBeta(object):
 
         return heuristic
 
-    def alphabeta(self, board, depth=3, alpha=-float('inf'), beta=float('inf'), ismax=True):
+    def alphabeta(self, board, depth=4, alpha=-float('inf'), beta=float('inf'), ismax=True):
         if depth == 0 or board.iswin() or board.islose():
             return {'value': self.evaluate(board, depth)}
 
