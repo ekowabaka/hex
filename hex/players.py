@@ -101,13 +101,17 @@ class AlphaBeta(object):
     def __init__(self, board):
         self.patternsearch = patterns.Search()
         self.size = board.size
+        self.flows = dict()
 
-    def getflow(self, graph, node=None):
+    def getflow(self, graph, node=None, flows=dict()):
         if node is None:
+            self.flows = dict()
             node = graph.maxvertex
         flow = 1
         for parent in graph.getparents(node):
-            flow += self.getflow(graph, parent)
+            if parent not in self.flows:
+                self.flows[parent] = self.getflow(graph, parent)
+            flow += self.flows[parent]
 
         return flow
         # flow = 0

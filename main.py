@@ -50,7 +50,7 @@ if __name__ == "__main__":
 
     while True:
         start = time.time()
-        move = getmove() #player.getmove(board)
+        move = player.getmove(board)
         print('Elapsed', time.time() - start)
         print(move)
         board.addmarker(move[0], move[1], representation.BLACK_MARKER)
