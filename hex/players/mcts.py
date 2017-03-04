@@ -21,7 +21,9 @@ class PureRandomUCT(object):
     A pure random MonteCarlo search tree.
     """
 
-    def __init__(self):
+    def __init__(self, marker):
+        self.max = marker
+        self.min = representation.BLACK_MARKER if marker == representation.WHITE_MARKER else representation.WHITE_MARKER
         self.states = None
 
     def getmove(self, board):
@@ -31,12 +33,13 @@ class PureRandomUCT(object):
 
     def mcts(self, board):
         self.states = dict()
-        self.states[board.state] = MonteCarloState(moves=board.getmoves(representation.BLACK_MARKER))
+        self.states[board.state] = MonteCarloState(moves=board.getmoves(self.max))
         terminated = False
         start = time.time()
+        iterations = 0
 
         while not terminated:
-            if time.time() - start > 20:
+            if time.time() - start > 90:
                 terminated = True
             newboard = self.treepolicy(board)
             if not newboard:
@@ -44,6 +47,10 @@ class PureRandomUCT(object):
             state = newboard.state
             value = self.defaultpolicy(newboard)
             self.backup(state, value)
+            iterations += 1
+
+        print("Iterations:", iterations)
+
 
     def treepolicy(self, root):
         board = root
@@ -54,9 +61,11 @@ class PureRandomUCT(object):
                 board = self.bestchild(board)
 
     def expand(self, board):
-        newstate = self.states[board.state].moves.pop()
+        moveindex = random.randrange(len(self.states[board.state].moves))
+        newstate = self.states[board.state].moves[moveindex]
+        del self.states[board.state].moves[moveindex]
         newboard = newstate['board']
-        markers = [representation.WHITE_MARKER, representation.BLACK_MARKER]
+        markers = [self.min, self.max]
         depth = self.states[board.state].depth + 1
         moves = newboard.getmoves(markers[depth % 2])
         self.states[newboard.state] = MonteCarloState(moves=moves, parent=board.state)
@@ -66,15 +75,15 @@ class PureRandomUCT(object):
 
     def defaultpolicy(self, board):
         # Implement full playout of game state
-        markers = [representation.BLACK_MARKER, representation.WHITE_MARKER]
-        turn = 0
+        markers = [self.max, self.min]
+        turn = self.states[board.state].depth % 2
         playboard = board.clone()
         while not playboard.isend():
             moves = playboard.getmoves(markers[turn], withboards=False)
             move = moves[random.randrange(len(moves))]
             playboard.addmarker(move[0], move[1], markers[turn])
             turn = int(not turn)
-        return 1 if playboard.iswin() else -1
+        return 1 if playboard.getwin() == self.max else -1
 
     def backup(self, state, value):
         while state:

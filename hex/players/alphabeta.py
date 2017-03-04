@@ -45,7 +45,7 @@ class AlphaBeta(object):
     def evaluate(self, board, depth=1):
         raise "Implement the evaluation function"
 
-    def alphabeta(self, board, depth=4, alpha=-float('inf'), beta=float('inf'), ismax=True):
+    def alphabeta(self, board, depth=3, alpha=-float('inf'), beta=float('inf'), ismax=True):
         if depth == 0 or board.isend():
             return {'value': self.evaluate(board, depth)}
 

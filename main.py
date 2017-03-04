@@ -12,7 +12,7 @@ def isdone(board):
 if __name__ == "__main__":
     board = representation.Board()
     board.setup(boardsize)
-    player1 = alphabeta.YReductionAlphaBeta(board, representation.BLACK_MARKER)
+    player1 = mcts.PureRandomUCT(representation.BLACK_MARKER)
     player2 = alphabeta.FlowAlphaBeta(board, representation.WHITE_MARKER)
 
     while True:
