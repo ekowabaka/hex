@@ -86,16 +86,16 @@ class Board(object):
         self.markers = dict()
         self.size = None
 
-    def iswin(self):
+    def getwin(self):
         if self.blackgraph.maxvertex in self.blackgraph.children[-1]:
-            return True
-
-    def islose(self):
+            return BLACK_MARKER
         if self.whitegraph.maxvertex in self.whitegraph.children[-1]:
-            return True
+            return WHITE_MARKER
 
     def isend(self):
-        return self.iswin() or self.islose()
+        if self.getwin() is not None:
+            return True
+        return False
 
     def setup(self, size=8, state=None):
         # Representation for current state of the board as a tuple
