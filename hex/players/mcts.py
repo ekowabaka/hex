@@ -39,7 +39,7 @@ class PureRandomUCT(object):
         iterations = 0
 
         while not terminated:
-            if time.time() - start > 90:
+            if time.time() - start > 60:
                 terminated = True
             newboard = self.treepolicy(board)
             if not newboard:
@@ -93,8 +93,13 @@ class PureRandomUCT(object):
             state = self.states[state].parent
 
     def bestchild(self, board):
-        c = 0.707106
-        children = {x.state:  (x, self.states[x.state].q/self.states[x.state].n + c * math.sqrt((2 * math.log(self.states[board.state].n, math.e))) / self.states[x.state].n) for x in self.states[board.state].children}
-        best = max(children.items(), key=lambda x: x[1][1])[0]
-        return children[best][0]
+        c = 0
+        maximum = float('-inf')
+        best = None
+        for x in self.states[board.state].children:
+            rating = self.states[x.state].q/self.states[x.state].n #+ c * math.sqrt((2 * math.log(self.states[board.state].n))) / self.states[x.state].n
+            if rating > maximum:
+                maximum = rating
+                best = x
+        return best
 
