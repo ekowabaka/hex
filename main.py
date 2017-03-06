@@ -78,6 +78,8 @@ def run(p1, p2):
 
 if __name__ == "__main__":
     for steps in range(int(sys.argv[3])):
-        wins[run(sys.argv[1], sys.argv[2])] += 1
-        wins[run(sys.argv[2], sys.argv[1])] += 1
+        winner = run(sys.argv[1], sys.argv[2])
+        wins[winner] += 1
+        winner = run(sys.argv[2], sys.argv[1])
+        wins[int(not winner)] += 1
     print(wins)
