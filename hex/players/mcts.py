@@ -63,6 +63,7 @@ class PureRandomUCT(object):
     def treepolicy(self, root):
         board = root
         while not board.isend():
+            #board.draw()
             # if self.states[board.state].moves is None:
             #     markers = [self.min, self.max]
             #     moves = board.getmoves(markers[self.states[board.state].depth % 2])
@@ -94,13 +95,15 @@ class PureRandomUCT(object):
         turn = self.states[board.state].depth % 2
         depth = self.states[board.state].depth
         playboard = board.clone()
+        moves = playboard.getmoves(markers[turn], withboards=False)
+        moves.sort(key=lambda x:random.random())
 
         while True:
-            moves = playboard.getmoves(markers[turn], withboards=False)
             if len(moves) == 0:
                 break
-            move = moves[random.randrange(len(moves))]
+            move = moves.pop()
             parent = playboard.state
+            #playboard.draw()
             playboard.addmarker(move[0], move[1], markers[turn])
             # depth += 1
             # if playboard.state not in self.states:
@@ -132,7 +135,7 @@ class PureRandomUCT(object):
             state = self.states[state].parent
 
     def bestchild(self, board):
-        c = 0.7
+        c = 0.5
         maximum = float('-inf')
         best = None
         for x in self.states[board.state].children:

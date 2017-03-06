@@ -245,3 +245,4 @@ class Board(object):
             sys.stdout.write("\n")
             indent += 1
             sys.stdout.write('  ' * indent)
+        print()

@@ -11,8 +11,8 @@ def isdone(board):
 if __name__ == "__main__":
     board = representation.Board()
     board.setup(boardsize)
-    player1 = mcts.PureRandomUCT(representation.BLACK_MARKER)
-    player2 = alphabeta.FlowAlphaBeta(board, representation.WHITE_MARKER)
+    player1 = alphabeta.FlowAlphaBeta(board, representation.BLACK_MARKER)
+    player2 = mcts.PureRandomUCT(representation.WHITE_MARKER)
 
     # positions = {(0, 1): 0, (1, 2): 0, (3, 2): 0, (1, 3): 0, (3, 3): 1, (3, 0): 1, (3, 1): 1, (2, 1): 0, (0, 2): 0, (2, 0): 0, (0, 0): 1, (2, 3): 0, (2, 2): 1, (1, 0): 1, (0, 3): 1, (1, 1): 0}
     #
