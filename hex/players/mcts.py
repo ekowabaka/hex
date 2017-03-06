@@ -1,4 +1,4 @@
-from hex import representation
+from hex import representation, patterns
 import math
 import random
 import time
@@ -29,26 +29,34 @@ class PureRandomUCT(object):
         self.max = marker
         self.min = representation.BLACK_MARKER if marker == representation.WHITE_MARKER else representation.WHITE_MARKER
         self.states = None
+        self.stats = list()
+        self.iterations = 0
+        self.maxtime = 60
         random.seed()
 
     def getmove(self, board):
+        self.iterations = 0
         self.mcts(board)
-        action = max([x.state for x in self.states[board.state].children], key=lambda x: self.states[x].q)
+        action = max([x.state for x in self.states[board.state].children], key=lambda x: self.states[x].n)
+        self.stats.append({"nodes":len(self.states), "iterations": self.iterations})
         return self.states[action].move
+
+    def getmoves(self, board):
+        moves = board.getmoves(self.max)
+        moves.sort(key=lambda x: random.random())
+        return moves
 
     def mcts(self, board):
         self.states = dict()
         board = board.clone()
         board.usegraphs = False
-        moves = board.getmoves(self.max)
-        moves.sort(key=lambda x: random.random())
+        moves = self.getmoves(board)
         self.states[board.state] = MonteCarloState(moves=moves)
         terminated = False
         start = time.time()
-        iterations = 0
 
         while not terminated:
-            if time.time() - start > 60:
+            if time.time() - start > self.maxtime:
                 terminated = True
             newboard = self.treepolicy(board)
             if not newboard:
@@ -56,20 +64,11 @@ class PureRandomUCT(object):
             state = newboard.state
             value = self.defaultpolicy(newboard)
             self.backup(state, value)
-            iterations += 1
-
-        print("Iterations:", iterations)
+            self.iterations += 1
 
     def treepolicy(self, root):
         board = root
         while not board.isend():
-            #board.draw()
-            # if self.states[board.state].moves is None:
-            #     markers = [self.min, self.max]
-            #     moves = board.getmoves(markers[self.states[board.state].depth % 2])
-            #     moves.sort(key=lambda x: random.random())
-            #     self.states[board.state].moves = moves
-            #     self.states[board.state].updatechildren()
             if len(self.states[board.state].moves) > 0:
                 return self.expand(board)
             else:
@@ -91,9 +90,7 @@ class PureRandomUCT(object):
     def defaultpolicy(self, board):
         # Implement full playout of game state
         markers = [self.max, self.min]
-        states = [[], []]
         turn = self.states[board.state].depth % 2
-        depth = self.states[board.state].depth
         playboard = board.clone()
         moves = playboard.getmoves(markers[turn], withboards=False)
         moves.sort(key=lambda x:random.random())
@@ -102,28 +99,10 @@ class PureRandomUCT(object):
             if len(moves) == 0:
                 break
             move = moves.pop()
-            parent = playboard.state
-            #playboard.draw()
             playboard.addmarker(move[0], move[1], markers[turn])
-            # depth += 1
-            # if playboard.state not in self.states:
-            #     self.states[playboard.state] = MonteCarloState(parent=parent)
-            #     self.states[playboard.state].move = move
-            #     self.states[playboard.state].depth = depth
-            #     self.states[parent].children.append(playboard.clone())
-            # states[turn].append(playboard.state)
             turn = int(not turn)
         playboard.isend()
         value = 1 if playboard.winner == self.max else -1
-
-        # Propagate AMAF Values
-        # for state in states[0]:
-        #     self.states[state].n += 1
-        #     self.states[state].q += value
-        #
-        # for state in states[1]:
-        #     self.states[state].n += 1
-        #     self.states[state].q += -value
 
         return value
 
@@ -135,7 +114,7 @@ class PureRandomUCT(object):
             state = self.states[state].parent
 
     def bestchild(self, board):
-        c = 0.5
+        c = 0.7
         maximum = float('-inf')
         best = None
         for x in self.states[board.state].children:
@@ -147,3 +126,82 @@ class PureRandomUCT(object):
                 maximum = rating
                 best = x
         return best
+
+
+class ExtendedMCTS(PureRandomUCT):
+
+    def __init__(self, marker):
+        PureRandomUCT.__init__(self, marker)
+        self.patterns = patterns.Search()
+
+    def getmoves(self, board):
+        moves = list()
+        boardmoves = board.getmoves(self.max)
+        goodmoves = self.patterns.getpattern(board)
+
+        for move in boardmoves:
+            if move['pos'] in goodmoves:
+                moves.append(move)
+
+        moves.sort(key=lambda x: random.random())
+        return moves
+
+
+    def treepolicy(self, root):
+        board = root
+        while not board.isend():
+            #board.draw()
+            if self.states[board.state].moves is None:
+                markers = [self.min, self.max]
+                moves = board.getmoves(markers[self.states[board.state].depth % 2])
+                moves.sort(key=lambda x: random.random())
+                self.states[board.state].moves = moves
+                self.states[board.state].updatechildren()
+            if len(self.states[board.state].moves) > 0:
+                return self.expand(board)
+            else:
+                board = self.bestchild(board)
+
+    def defaultpolicy(self, board):
+        # Implement full playout of game state
+        markers = [self.max, self.min]
+        states = [[], []]
+        turn = self.states[board.state].depth % 2
+        depth = self.states[board.state].depth
+        playboard = board.clone()
+        moves = playboard.getmoves(markers[turn], withboards=False)
+        moves.sort(key=lambda x:random.random())
+
+        while True:
+            if len(moves) == 0:
+                break
+
+            parent = playboard.state
+            bridges = self.patterns.findbridges(playboard, turn)
+            if len(bridges) > 0:
+                move = bridges.pop()
+                moves.remove(move)
+            else:
+                move = moves.pop()
+            playboard.addmarker(move[0], move[1], markers[turn])
+            depth += 1
+            if playboard.state not in self.states:
+                self.states[playboard.state] = MonteCarloState(parent=parent)
+                self.states[playboard.state].move = move
+                self.states[playboard.state].depth = depth
+                self.states[parent].children.append(playboard.clone())
+            states[turn].append(playboard.state)
+            turn = int(not turn)
+        playboard.isend()
+        value = 1 if playboard.winner == self.max else -1
+
+        # Propagate AMAF Values
+        for state in states[0]:
+            self.states[state].n += 1
+            self.states[state].q += value
+
+        for state in states[1]:
+            self.states[state].n += 1
+            self.states[state].q += -value
+
+        return value

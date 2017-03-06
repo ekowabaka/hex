@@ -233,16 +233,25 @@ class Board(object):
                         graph.addedge(v, u)
     def draw(self):
         indent = 0
-        size = len(self.state)
-        for y in range(size):
-            for x in range(size):
+        sys.stdout.write('       ')
+        for alpha in ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']:
+            sys.stdout.write(alpha + '  ')
+        sys.stdout.write('\n       ')
+        for alpha in range(self.size):
+            sys.stdout.write('B  ')
+        print()
+        for y in range(self.size):
+
+            sys.stdout.write(str(y+1) + '  W   ')
+            for x in range(self.size):
                 marker = '.'
                 if self.state[x][y] == BLACK_MARKER:
-                    marker = '0'
+                    marker = 'B'
                 elif self.state[x][y] == WHITE_MARKER:
-                    marker = 'X'
+                    marker = 'W'
                 sys.stdout.write(marker + '  ')
             sys.stdout.write("\n")
             indent += 1
             sys.stdout.write('  ' * indent)
+
         print()

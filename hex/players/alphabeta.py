@@ -1,4 +1,5 @@
 import math
+import time
 from hex import representation
 from hex import patterns
 
@@ -16,6 +17,9 @@ class AlphaBeta(object):
         self.flows = dict()
         self.max = marker
         self.min = representation.BLACK_MARKER if marker == representation.WHITE_MARKER else representation.WHITE_MARKER
+        self.maxdepth = 3
+        self.nodes = 0
+        self.stats = list()
 
     def getflow(self, graph, node=None):
         if node is None:
@@ -39,17 +43,27 @@ class AlphaBeta(object):
         return flow
 
     def getmove(self, board):
+        self.nodes = 0
+        start = time.time()
         move = self.alphabeta(board)
+        self.stats.append({"nodes": self.nodes, "time": time.time() - start})
         return move['move']
 
     def evaluate(self, board, depth=1):
         raise "Implement the evaluation function"
 
-    def alphabeta(self, board, depth=3, alpha=-float('inf'), beta=float('inf'), ismax=True):
+    def alphabeta(self, board, depth=None, alpha=-float('inf'), beta=float('inf'), ismax=True):
+        self.nodes += 1
+        if depth is None:
+            depth = self.maxdepth
         if depth == 0 or board.isend():
             return {'value': self.evaluate(board, depth)}
 
         playpattern = self.patternsearch.getpattern(board)
+        deadcells = self.patternsearch.finddeadcells(board, self.max)
+        for move in deadcells:
+            playpattern.discard(move)
+
         bestmove = None
 
         if ismax:
@@ -86,9 +100,9 @@ class FlowAlphaBeta(AlphaBeta):
             else:
                 heuristic = 0
         else:
-            maxgraph = board.blackgraph if self.max == representation.BLACK_MARKER else board.whitegraph
-            mingraph = board.whitegraph if self.min == representation.WHITE_MARKER else board.blackgraph
-            heuristic = math.log(self.getflow(maxgraph) / self.getflow(mingraph))
+            maxflow = self.getflow(board.blackgraph if self.max == representation.BLACK_MARKER else board.whitegraph)
+            minflow = self.getflow(board.whitegraph if self.min == representation.WHITE_MARKER else board.blackgraph)
+            heuristic = math.log(maxflow / minflow if minflow > 0 else 0.01)
         return heuristic
 
 
