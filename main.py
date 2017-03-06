@@ -4,9 +4,8 @@ from hex.players import alphabeta, human, mcts
 boardsize = 8
 
 def isdone(board):
-    winner = board.getwin()
-    if winner is not None:
-        print("White" if winner == representation.WHITE_MARKER else "Black", "wins!")
+    if board.isend():
+        print("White" if board.winner == representation.WHITE_MARKER else "Black", "wins!")
         quit()
 
 if __name__ == "__main__":
@@ -14,6 +13,17 @@ if __name__ == "__main__":
     board.setup(boardsize)
     player1 = mcts.PureRandomUCT(representation.BLACK_MARKER)
     player2 = alphabeta.FlowAlphaBeta(board, representation.WHITE_MARKER)
+
+    # positions = {(0, 1): 0, (1, 2): 0, (3, 2): 0, (1, 3): 0, (3, 3): 1, (3, 0): 1, (3, 1): 1, (2, 1): 0, (0, 2): 0, (2, 0): 0, (0, 0): 1, (2, 3): 0, (2, 2): 1, (1, 0): 1, (0, 3): 1, (1, 1): 0}
+    #
+    # board.usegraphs = False
+    #
+    # for pos, marker in positions.items():
+    #     board.addmarker(pos[0], pos[1], marker)
+    #
+    # board.draw()
+    # print(board.isend() is False)
+    # quit()
 
     while True:
         board.draw()

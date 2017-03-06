@@ -81,7 +81,7 @@ class AlphaBeta(object):
 class FlowAlphaBeta(AlphaBeta):
     def evaluate(self, board, depth=1):
         if board.isend():
-            if board.getwin() == self.max:
+            if board.winner == self.max:
                 heuristic = 10 * (depth + 1)
             else:
                 heuristic = 0
