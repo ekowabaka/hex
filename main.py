@@ -3,8 +3,7 @@ from hex.players import alphabeta, human, mcts
 import sys
 
 boardsize = 8
-player1 = None
-player2 = None
+players = [None, None]
 session = [""]
 movelist = []
 
@@ -45,31 +44,38 @@ def playerfactory(desc, board, marker):
     elif desc[0] == "mcts":
         player = mcts.PureRandomUCT(marker)
         player.maxtime = int(desc[1])
+        if 2 in desc:
+            player.selection = desc[2]
     elif desc[0] == "emcts":
         player = mcts.ExtendedMCTS(marker)
         player.maxtime = int(desc[1])
+        if 2 in desc:
+            player.selection = desc[2]
     else:
         print("Unknown player type", desc)
         quit()
     return player
 
-if __name__ == "__main__":
+def run(p1, p2):
     board = representation.Board()
     board.setup(boardsize)
-
-    if sys.argv[1]:
-        player1 = playerfactory(sys.argv[1], board, representation.BLACK_MARKER)
-    if sys.argv[2]:
-        player2 = playerfactory(sys.argv[2], board, representation.WHITE_MARKER)
+    players[0] = playerfactory(p1, board, representation.BLACK_MARKER)
+    players[1] = playerfactory(p2, board, representation.WHITE_MARKER)
 
     while True:
         board.draw()
         if isdone(board): break
-        move = player1.getmove(board)
+        move = players[0].getmove(board)
         movelist.append(move)
         board.addmarker(move[0], move[1], representation.BLACK_MARKER)
         board.draw()
         if isdone(board): break
-        move = player2.getmove(board)
+        move = players[1].getmove(board)
         movelist.append(move)
         board.addmarker(move[0], move[1], representation.WHITE_MARKER)
+
+
+if __name__ == "__main__":
+    for steps in range(int(sys.argv[3])):
+        run(sys.argv[1], sys.argv[2])
+        run(sys.argv[2], sys.argv[1])

@@ -32,12 +32,18 @@ class PureRandomUCT(object):
         self.stats = list()
         self.iterations = 0
         self.maxtime = 60
+        self.selection = 'n'
         random.seed()
 
     def getmove(self, board):
         self.iterations = 0
         self.mcts(board)
-        action = max([x.state for x in self.states[board.state].children], key=lambda x: self.states[x].n)
+
+        if self.selection == 'n':
+            action = max([x.state for x in self.states[board.state].children], key=lambda x: self.states[x].n)
+        else:
+            action = max([x.state for x in self.states[board.state].children], key=lambda x: self.states[x].q)
+
         self.stats.append({"nodes":len(self.states), "iterations": self.iterations})
         return self.states[action].move
 
