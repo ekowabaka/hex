@@ -4,6 +4,7 @@ import sys
 
 boardsize = 8
 players = [None, None]
+wins = [0,0]
 session = [""]
 movelist = []
 
@@ -11,14 +12,14 @@ def isdone(board):
     if board.isend():
         print("White" if board.winner == representation.WHITE_MARKER else "Black", "wins!")
         file = open(session[0] + "p1", 'w')
-        for line in player1.stats:
+        for line in players[0].stats:
             for value in line.values():
                 file.write(str(value) + ",")
             file.write("\n")
         file.close()
 
         file = open(session[0] + "p2", 'w')
-        for line in player2.stats:
+        for line in players[1].stats:
             for value in line.values():
                 file.write(str(value) + ",")
             file.write("\n")
@@ -73,9 +74,10 @@ def run(p1, p2):
         move = players[1].getmove(board)
         movelist.append(move)
         board.addmarker(move[0], move[1], representation.WHITE_MARKER)
-
+    return board.winner
 
 if __name__ == "__main__":
     for steps in range(int(sys.argv[3])):
-        run(sys.argv[1], sys.argv[2])
-        run(sys.argv[2], sys.argv[1])
+        wins[run(sys.argv[1], sys.argv[2])] += 1
+        wins[run(sys.argv[2], sys.argv[1])] += 1
+    print(wins)
