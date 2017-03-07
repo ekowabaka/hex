@@ -47,6 +47,7 @@ class AlphaBeta(object):
         start = time.time()
         move = self.alphabeta(board)
         self.stats.append({"nodes": self.nodes, "time": time.time() - start})
+        print({"nodes": self.nodes, "time": time.time() - start})
         return move['move']
 
     def evaluate(self, board, depth=1):

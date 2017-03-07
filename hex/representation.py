@@ -233,16 +233,15 @@ class Board(object):
                         graph.addedge(v, u)
     def draw(self):
         indent = 0
-        sys.stdout.write('       ')
+        sys.stdout.write('          ')
         for alpha in ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']:
             sys.stdout.write(alpha + '  ')
-        sys.stdout.write('\n       ')
+        sys.stdout.write('\n          ')
         for alpha in range(self.size):
             sys.stdout.write('B  ')
-        print()
+        print("\n")
         for y in range(self.size):
-
-            sys.stdout.write(str(y+1) + '  W   ')
+            sys.stdout.write(str(y+1) + '  W      ')
             for x in range(self.size):
                 marker = '.'
                 if self.state[x][y] == BLACK_MARKER:
@@ -255,3 +254,7 @@ class Board(object):
             sys.stdout.write('  ' * indent)
 
         print()
+
+    def printmove(self, move):
+        rows = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
+        return rows[move[0]] + str(move[1] + 1)

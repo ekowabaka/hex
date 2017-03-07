@@ -67,19 +67,18 @@ def run(p1, p2):
         board.draw()
         if isdone(board): break
         move = players[0].getmove(board)
+        print("Played", board.printmove(move))
+        print()
         movelist.append(move)
         board.addmarker(move[0], move[1], representation.BLACK_MARKER)
         board.draw()
         if isdone(board): break
         move = players[1].getmove(board)
+        print("Played", board.printmove(move))
+        print()
         movelist.append(move)
         board.addmarker(move[0], move[1], representation.WHITE_MARKER)
     return board.winner
 
 if __name__ == "__main__":
-    for steps in range(int(sys.argv[3])):
-        winner = run(sys.argv[1], sys.argv[2])
-        wins[winner] += 1
-        winner = run(sys.argv[2], sys.argv[1])
-        wins[int(not winner)] += 1
-    print(wins)
+    run(sys.argv[1], sys.argv[2])
