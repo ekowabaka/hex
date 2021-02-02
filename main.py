@@ -4,11 +4,15 @@ import sys
 
 boardsize = 8
 players = [None, None]
-wins = [0,0]
+wins = [0, 0]
 session = [""]
 movelist = []
 
+
 def isdone(board):
+    """
+    Checks if any of the players have completed the chain, so the game could end.
+    """
     if board.isend():
         print("White" if board.winner == representation.WHITE_MARKER else "Black", "wins!")
         file = open(session[0] + "p1", 'w')
@@ -30,7 +34,12 @@ def isdone(board):
         return True
     return False
 
+
 def playerfactory(desc, board, marker):
+    """
+    Parse the command line argument and create objects for the players.
+    Command line arguments are in the format [type]:[options].
+    """
     desc = desc.split(':')
     session[0] += desc[0] + "-" + desc[1] + "-"
     player = None
@@ -57,7 +66,11 @@ def playerfactory(desc, board, marker):
         quit()
     return player
 
+
 def run(p1, p2):
+    """
+    Run a match between two players: p1 and p2.
+    """
     board = representation.Board()
     board.setup(boardsize)
     players[0] = playerfactory(p1, board, representation.BLACK_MARKER)
@@ -65,20 +78,23 @@ def run(p1, p2):
 
     while True:
         board.draw()
-        if isdone(board): break
+        if isdone(board):
+            break
         move = players[0].getmove(board)
         print("Played", board.printmove(move))
         print()
         movelist.append(move)
         board.addmarker(move[0], move[1], representation.BLACK_MARKER)
         board.draw()
-        if isdone(board): break
+        if isdone(board):
+            break
         move = players[1].getmove(board)
         print("Played", board.printmove(move))
         print()
         movelist.append(move)
         board.addmarker(move[0], move[1], representation.WHITE_MARKER)
     return board.winner
+
 
 if __name__ == "__main__":
     run(sys.argv[1], sys.argv[2])

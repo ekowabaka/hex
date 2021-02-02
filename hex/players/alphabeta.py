@@ -7,7 +7,7 @@ from hex import patterns
 class AlphaBeta(object):
     """
     Plain alpha-beta search agent.
-    This agent uses the player flow heuristic to implement a classic alpha-beta search of gametree nodes to determine
+    This agent uses the player flow heuristic to implement a classic alpha-beta search of game tree nodes to determine
     gameplay actions.
     """
 
@@ -21,27 +21,6 @@ class AlphaBeta(object):
         self.nodes = 0
         self.stats = list()
 
-    def getflow(self, graph, node=None):
-        if node is None:
-            self.flows = dict()
-            node = graph.maxvertex
-        if node == -1:
-            return float('inf')
-        flow = 0
-        for parent in graph.getparents(node):
-            if parent not in self.flows:
-                self.flows[parent] = self.getflow(graph, parent)
-            flow += self.flows[parent]
-
-        numchildren = len(graph.children[node])
-
-        if flow > numchildren and node != graph.maxvertex:
-            flow = 1
-        elif node != graph.maxvertex:
-            flow /= numchildren
-
-        return flow
-
     def getmove(self, board):
         self.nodes = 0
         start = time.time()
@@ -51,7 +30,7 @@ class AlphaBeta(object):
         return move['move']
 
     def evaluate(self, board, depth=1):
-        raise "Implement the evaluation function"
+        raise Exception("Implement the evaluation function")
 
     def alphabeta(self, board, depth=None, alpha=-float('inf'), beta=float('inf'), ismax=True):
         self.nodes += 1
@@ -94,6 +73,27 @@ class AlphaBeta(object):
 
 
 class FlowAlphaBeta(AlphaBeta):
+    def getflow(self, graph, node=None):
+        if node is None:
+            self.flows = dict()
+            node = graph.maxvertex
+        if node == -1:
+            return float('inf')
+        flow = 0
+        for parent in graph.getparents(node):
+            if parent not in self.flows:
+                self.flows[parent] = self.getflow(graph, parent)
+            flow += self.flows[parent]
+
+        numchildren = len(graph.children[node])
+
+        if flow > numchildren and node != graph.maxvertex:
+            flow = 1
+        elif node != graph.maxvertex:
+            flow /= numchildren
+
+        return flow
+
     def evaluate(self, board, depth=1):
         if board.isend():
             if board.winner == self.max:

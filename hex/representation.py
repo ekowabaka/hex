@@ -26,7 +26,7 @@ class Graph(object):
         return self.children[v]
 
     def getcoordneighbors(self, x, y):
-        return self.coordinates[(x,y)]
+        return self.coordinates[(x, y)]
 
     def getparents(self, v):
         return self.parents[v]
@@ -69,7 +69,7 @@ class Graph(object):
 
     def setup(self, size, cmp):
         self.size = size
-        self.offsets = [-size, 1-size, -1, 1, size-1, size]
+        self.offsets = [-size, 1 - size, -1, 1, size - 1, size]
         self.maxvertex = size * size
         self.children = dict([(x, frozenset()) for x in range(-1, self.maxvertex + 1)])
         self.parents = dict([(x, frozenset()) for x in range(-1, self.maxvertex + 1)])
@@ -94,6 +94,7 @@ class Graph(object):
                     if (x, y) not in self.coordinates:
                         self.coordinates[(x, y)] = list()
                     self.coordinates[(x, y)].append(self.nodecoords(child))
+
 
 class Board(object):
     def __init__(self):
@@ -161,7 +162,7 @@ class Board(object):
         # Rebuild the flow children if a new state was presented
         if state:
             for x in range(size):
-                for y in range (size):
+                for y in range(size):
                     if state[x][y] is not None:
                         self.addmarker(x, y, state[x][y])
 
@@ -198,14 +199,15 @@ class Board(object):
         return tuple(column)
 
     def addmarker(self, x, y, marker):
-        self.state = tuple(self.state[i] if i != x else self.newcol(self.state[i], y, marker) for i in range(len(self.state)))
+        self.state = tuple(
+            self.state[i] if i != x else self.newcol(self.state[i], y, marker) for i in range(len(self.state)))
         self.markers[(x, y)] = marker
         if self.usegraphs:
             self.modifygraph(x, y, self.blackgraph, marker, BLACK_MARKER)
             self.modifygraph(x, y, self.whitegraph, marker, WHITE_MARKER)
 
     def getflatstate(self):
-        return {i: self.state[int(i/self.size)][i % self.size] for i in range(self.blackgraph.maxvertex)}
+        return {i: self.state[int(i / self.size)][i % self.size] for i in range(self.blackgraph.maxvertex)}
 
     def modifygraph(self, x, y, graph, marker, state):
         nodeid = graph.nodeid(x, y)
@@ -231,6 +233,7 @@ class Board(object):
 
                     if graph.cmp((ux, uy), (vx, vy)):
                         graph.addedge(v, u)
+
     def draw(self):
         indent = 0
         sys.stdout.write('          ')
@@ -241,7 +244,7 @@ class Board(object):
             sys.stdout.write('B  ')
         print("\n")
         for y in range(self.size):
-            sys.stdout.write(str(y+1) + '  W      ')
+            sys.stdout.write(str(y + 1) + '  W      ')
             for x in range(self.size):
                 marker = '.'
                 if self.state[x][y] == BLACK_MARKER:

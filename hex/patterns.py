@@ -17,11 +17,10 @@ class Search(object):
         self.dead.append({"size": (3, 3), "pattern": (2, 2, 1, 0, None, 1, 0, 2, 2), "interest": (1, 1)})
         self.dead.append({"size": (3, 3), "pattern": (0, 2, 2, 0, None, 1, 2, 2, 1), "interest": (1, 1)})
 
-        #self.dead.append({"size": (3, 2), "pattern": (1, None, 1, 2, 1, 1), "interest": (1, 0)})
-        #self.dead.append({"size": (3, 2), "pattern": (1, None, 1, 2, 1, 1), "interest": (1, 0)})
-
-
-        self.prunepattern = ((1,-2), (-1,-1), (0,-1), (1,-1), (2,-1), (-1,0), (0,0), (1,0), (-2,1), (-1,1), (0,1), (1,1), (-1,2))
+        self.prunepattern = (
+            (1, -2), (-1, -1), (0, -1), (1, -1), (2, -1), (-1, 0), (0, 0), (1, 0), (-2, 1), (-1, 1), (0, 1), (1, 1),
+            (-1, 2)
+        )
 
     def extract(self, state, bridge, offset, marker):
         substate = list()
@@ -73,4 +72,3 @@ class Search(object):
                 for y in range(board.size):
                     moves.add((x, y))
         return moves
-
