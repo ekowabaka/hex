@@ -22,6 +22,9 @@ class AlphaBeta(object):
         self.stats = list()
 
     def getmove(self, board):
+        """
+        Run the alpha beta algorithm to the maximum depth and return the best move.
+        """
         self.nodes = 0
         start = time.time()
         move = self.alphabeta(board)
@@ -30,9 +33,15 @@ class AlphaBeta(object):
         return move['move']
 
     def evaluate(self, board, depth=1):
+        """
+        Leave the evaluation function to be implemented by sub-classes.
+        """
         raise Exception("Implement the evaluation function")
 
     def alphabeta(self, board, depth=None, alpha=-float('inf'), beta=float('inf'), ismax=True):
+        """
+        Actual implementation of Alpha-Beta search.
+        """
         self.nodes += 1
         if depth is None:
             depth = self.maxdepth
@@ -73,6 +82,10 @@ class AlphaBeta(object):
 
 
 class FlowAlphaBeta(AlphaBeta):
+    """
+    An implementation of alpha-beta search that uses the max-flow heuristic.
+    """
+
     def getflow(self, graph, node=None):
         if node is None:
             self.flows = dict()
@@ -108,6 +121,9 @@ class FlowAlphaBeta(AlphaBeta):
 
 
 class YReductionAlphaBeta(AlphaBeta):
+    """
+    An implementation of alpha-beta search that uses the y-reduction heuristic.
+    """
     def evaluate(self, board, depth=1):
         ysize = board.size + board.size - 1
         yboard = list()
